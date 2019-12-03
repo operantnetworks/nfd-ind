@@ -24,8 +24,11 @@
  */
 
 #include "fib-entry.hpp"
+#include "name-tree-entry.hpp"
+#include "common/logger.hpp"
 
 namespace nfd {
+NFD_LOG_INIT(FibEntry);
 namespace fib {
 
 Entry::Entry(const Name& prefix)
@@ -49,14 +52,44 @@ Entry::hasNextHop(const Face& face, EndpointId endpointId) const
 }
 
 void
+Entry::sendPendingInterests(const name_tree::Entry* nte, const NextHop& newHop)
+{
+  if (nte == nullptr || (!nte->hasChildren() && !nte->hasPitEntries())) {
+    return;
+  }
+  // send this entry's pending interests to 'newHop' then recurse
+  // on entry's children.
+  NFD_LOG_DEBUG("sendPendingInterests for " << nte->getName() << " to face "
+                << newHop.getFace().getId());
+  if (nte->getStrategyChoiceEntry() != nullptr) {
+    NFD_LOG_DEBUG("found strategy " <<
+      nte->getStrategyChoiceEntry()->getPrefix() << " " <<
+      nte->getStrategyChoiceEntry()->getStrategyInstanceName());
+  }
+  for (auto pe : nte->getPitEntries()) {
+    if (! pe->isSatisfied) {
+      newHop.getFace().sendInterest(pe->getInterest(), newHop.getEndpointId());
+      NFD_LOG_DEBUG("sent Interest " << pe->getName());
+    }
+  }
+  for (auto ce : nte->getChildren()) {
+    sendPendingInterests(ce, newHop);
+  }
+}
+
+void
 Entry::addOrUpdateNextHop(Face& face, EndpointId endpointId, uint64_t cost)
 {
   auto it = this->findNextHop(face, endpointId);
   if (it == m_nextHops.end()) {
     m_nextHops.emplace_back(face, endpointId);
     it = std::prev(m_nextHops.end());
+  } else if (it->getCost() == cost) {
+    // nothing changed
+    return;
   }
   it->setCost(cost);
+  this->sendPendingInterests(m_nameTreeEntry, *it);
   this->sortNextHops();
 }
 

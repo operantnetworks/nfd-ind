@@ -98,6 +98,15 @@ public:
   removeNextHopByFace(const Face& face);
 
 private:
+  /** \brief forward pending interests to a newly added hop
+   *
+   *  All the pending interests associated with the name tree
+   *  entry \p nte and its children are sent to \p newHop's
+   *  \p face and \p endpointId.
+   */
+  void
+  sendPendingInterests(const name_tree::Entry* nte, const NextHop& newHop);
+
   /** \note This method is non-const because mutable iterators are needed by callers.
    */
   NextHopList::iterator
