@@ -27,8 +27,6 @@
 #define NFD_DAEMON_FW_MULTICAST_STRATEGY_HPP
 
 #include "strategy.hpp"
-#include "process-nack-traits.hpp"
-#include "retx-suppression-exponential.hpp"
 
 namespace nfd {
 namespace fw {
@@ -38,7 +36,6 @@ namespace fw {
  *  \note This strategy is not EndpointId-aware.
  */
 class MulticastStrategy : public Strategy
-                        , public ProcessNackTraits<MulticastStrategy>
 {
 public:
   explicit
@@ -54,14 +51,6 @@ public:
   void
   afterReceiveNack(const FaceEndpoint& ingress, const lp::Nack& nack,
                    const shared_ptr<pit::Entry>& pitEntry) override;
-
-private:
-  friend ProcessNackTraits<MulticastStrategy>;
-  RetxSuppressionExponential m_retxSuppression;
-
-PUBLIC_WITH_TESTS_ELSE_PRIVATE:
-  static const time::milliseconds RETX_SUPPRESSION_INITIAL;
-  static const time::milliseconds RETX_SUPPRESSION_MAX;
 };
 
 } // namespace fw
