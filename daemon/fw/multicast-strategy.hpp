@@ -1,5 +1,17 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
-/*
+/**
+ * Copyright (C) 2020 Operant Networks, Incorporated.
+ * @author: Van Jacobson <info@pollere.net>
+ *
+ * This works is based substantially on previous work as listed below:
+ *
+ * Original file: daemon/fw/multicast-strategy.hpp
+ * Original repository: https://github.com/named-data/NFD
+ *
+ * Summary of Changes: Disable NACK processing on multicast faces. https://github.com/pollere/NDNpatches
+ *
+ * which was originally released under the LGPL license with the following rights:
+ *
  * Copyright (c) 2014-2019,  Regents of the University of California,
  *                           Arizona Board of Regents,
  *                           Colorado State University,
