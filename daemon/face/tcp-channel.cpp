@@ -1,5 +1,16 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
+ * Copyright (C) 2021 Operant Networks, Incorporated.
+ *
+ * This works is based substantially on previous work as listed below:
+ *
+ * Original file: daemon/face/tcp-channel.cpp
+ * Original repository: https://github.com/named-data/NFD
+ *
+ * Summary of Changes: Add TCP KEEPIDLE.
+ *
+ * which was originally released under the LGPL license with the following rights:
+ *
  * Copyright (c) 2014-2019,  Regents of the University of California,
  *                           Arizona Board of Regents,
  *                           Colorado State University,
@@ -28,6 +39,15 @@
 #include "generic-link-service.hpp"
 #include "tcp-transport.hpp"
 #include "common/global.hpp"
+
+#if !defined(SOL_TCP) && defined(IPPROTO_TCP)
+// Needed for macOS.
+#define SOL_TCP IPPROTO_TCP
+#endif
+#if !defined(TCP_KEEPIDLE) && defined(TCP_KEEPALIVE)
+// Needed for macOS.
+#define TCP_KEEPIDLE TCP_KEEPALIVE
+#endif
 
 namespace nfd {
 namespace face {
@@ -91,6 +111,31 @@ TcpChannel::connect(const tcp::Endpoint& remoteEndpoint,
 
   NFD_LOG_CHAN_TRACE("Connecting to " << remoteEndpoint);
   clientSocket->async_connect(remoteEndpoint, [=] (const auto& e) {
+    do {
+      // Set the TCP KEEPIDLE timer so that NFD will drop the face if disconnected.
+      int flags = 10;
+      if (setsockopt(clientSocket->native_handle(), SOL_TCP, TCP_KEEPIDLE, (void *)&flags, sizeof(flags))) {
+        NFD_LOG_CHAN_TRACE("TcpChannel::connect: ERROR: setsocketopt(), TCP_KEEPIDLE");
+        break;
+      }
+      flags = 5;
+      if (setsockopt(clientSocket->native_handle(), SOL_TCP, TCP_KEEPCNT, (void *)&flags, sizeof(flags))) {
+        NFD_LOG_CHAN_TRACE("TcpChannel::connect: ERROR: setsocketopt(), TCP_KEEPCNT");
+        break;
+      }
+      flags = 5;
+      if (setsockopt(clientSocket->native_handle(), SOL_TCP, TCP_KEEPINTVL, (void *)&flags, sizeof(flags))) {
+        NFD_LOG_CHAN_TRACE("TcpChannel::connect: ERROR: setsocketopt(), TCP_KEEPINTVL");
+        break;
+      }
+      flags = 1;
+      if (setsockopt(clientSocket->native_handle(), SOL_SOCKET, SO_KEEPALIVE, (void *)&flags, sizeof(flags))) {
+        NFD_LOG_CHAN_TRACE("TcpChannel::connect: ERROR: setsocketopt(), SO_KEEPALIVE");
+        break;
+      }
+      NFD_LOG_CHAN_TRACE("Successfully set TCP KEEPIDLE");
+    } while(0);
+
     this->handleConnect(e, remoteEndpoint, clientSocket, params, timeoutEvent, onFaceCreated, onConnectFailed);
   });
 }
