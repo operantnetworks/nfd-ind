@@ -39,6 +39,7 @@ static const time::seconds DEFAULT_REFRESH_INTERVAL = 25_s;
 HostToGatewayReadvertisePolicy::HostToGatewayReadvertisePolicy(const ndn::KeyChain& keyChain,
                                                                const ConfigSection& section)
   : m_keyChain(keyChain)
+  , m_refreshInterval(0)
 {
   auto interval = section.get_optional<uint64_t>("refresh_interval");
   m_refreshInterval = interval ? time::seconds(*interval) : DEFAULT_REFRESH_INTERVAL;

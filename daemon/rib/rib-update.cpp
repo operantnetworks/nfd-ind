@@ -29,6 +29,7 @@ namespace nfd {
 namespace rib {
 
 RibUpdate::RibUpdate()
+  : m_action(REGISTER)
 {
 
 }

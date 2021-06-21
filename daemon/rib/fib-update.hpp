@@ -40,6 +40,7 @@ public:
   FibUpdate()
     : faceId(0)
     , cost(0)
+    , action(ADD_NEXTHOP)
   {
   }
 
