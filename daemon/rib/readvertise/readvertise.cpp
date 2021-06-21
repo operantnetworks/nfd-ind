@@ -50,10 +50,9 @@ Readvertise::Readvertise(Rib& rib,
                          unique_ptr<ReadvertiseDestination> destination)
   : m_policy(std::move(policy))
   , m_destination(std::move(destination))
+  , m_addRouteConn(rib.afterAddRoute.connect([this] (const auto& r) { this->afterAddRoute(r); }))
+  , m_removeRouteConn(rib.beforeRemoveRoute.connect([this] (const auto& r) { this->beforeRemoveRoute(r); }))
 {
-  m_addRouteConn = rib.afterAddRoute.connect([this] (const auto& r) { this->afterAddRoute(r); });
-  m_removeRouteConn = rib.beforeRemoveRoute.connect([this] (const auto& r) { this->beforeRemoveRoute(r); });
-
   m_destination->afterAvailabilityChange.connect([this] (bool isAvailable) {
     if (isAvailable) {
       this->afterDestinationAvailable();
