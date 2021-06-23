@@ -46,7 +46,8 @@ sortRoutes(const Route& lhs, const Route& rhs)
 }
 
 Rib::Rib()
-  : m_nItems(0)
+  : m_fibUpdater(0)
+  , m_nItems(0)
   , m_isUpdateInProgress(false)
 {
 }

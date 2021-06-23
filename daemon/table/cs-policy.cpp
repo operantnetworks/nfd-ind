@@ -61,6 +61,7 @@ Policy::getPolicyNames()
 
 Policy::Policy(const std::string& policyName)
   : m_policyName(policyName)
+  , m_limit(0)
 {
 }
 

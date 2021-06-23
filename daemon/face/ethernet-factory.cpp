@@ -45,11 +45,11 @@ EthernetFactory::getId() noexcept
 
 EthernetFactory::EthernetFactory(const CtorParams& params)
   : ProtocolFactory(params)
+  , m_netifAddConn(netmon->onInterfaceAdded.connect([this] (const auto& netif) {
+      this->applyUnicastConfigToNetif(netif);
+      this->applyMcastConfigToNetif(*netif);
+    }))
 {
-  m_netifAddConn = netmon->onInterfaceAdded.connect([this] (const auto& netif) {
-    this->applyUnicastConfigToNetif(netif);
-    this->applyMcastConfigToNetif(*netif);
-  });
 }
 
 void

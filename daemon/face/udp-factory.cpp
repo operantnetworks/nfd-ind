@@ -49,10 +49,10 @@ UdpFactory::getId() noexcept
 
 UdpFactory::UdpFactory(const CtorParams& params)
   : ProtocolFactory(params)
+  , m_netifAddConn(netmon->onInterfaceAdded.connect([this] (const auto& netif) {
+      this->applyMcastConfigToNetif(netif);
+    }))
 {
-  m_netifAddConn = netmon->onInterfaceAdded.connect([this] (const auto& netif) {
-    this->applyMcastConfigToNetif(netif);
-  });
 }
 
 void

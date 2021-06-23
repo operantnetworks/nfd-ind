@@ -1,7 +1,7 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /**
  * Copyright (C) 2020 Operant Networks, Incorporated.
- * @author: Van Jacobson <info@pollere.net>
+ * @author: Van Jacobson
  *
  * This works is based substantially on previous work as listed below:
  *
